@@ -55,6 +55,10 @@ export class DatabaseService {
         CREATE TABLE IF NOT EXISTS goals (
           id SERIAL PRIMARY KEY,
           title TEXT NOT NULL,
+          description TEXT,
+          deadline DATE,
+          progress INTEGER DEFAULT 0, -- 0-100
+          status TEXT DEFAULT 'active', -- 'active' or 'completed'
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
       `);
