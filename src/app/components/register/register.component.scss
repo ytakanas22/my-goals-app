@@ -1,0 +1,42 @@
+.register-card {
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 1rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); // 少し高級感のある影
+  border-radius: 12px;
+
+  mat-card-header {
+    margin-bottom: 1.5rem;
+    justify-content: center;
+    
+    mat-card-title {
+      font-size: 1.4rem;
+      font-weight: 500;
+      color: #333;
+    }
+  }
+
+  form {
+    display: flex;
+    flex-direction: column; // これで縦並びを強制
+    gap: 8px; // フィールド間の隙間を調整
+
+    mat-form-field {
+      width: 100%; // 横幅いっぱいに広げる
+    }
+
+    .description-field {
+      textarea {
+        min-height: 150px; // 詳細欄を大きく確保
+        font-family: inherit;
+      }
+    }
+
+    button[type="submit"] {
+      margin-top: 1rem;
+      padding: 1.2rem;
+      font-size: 1.1rem;
+      border-radius: 8px;
+    }
+  }
+}
