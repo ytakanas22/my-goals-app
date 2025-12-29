@@ -1,6 +1,24 @@
 # my-goals-app
 Make your goals for this year!!
 
+# How to Set Up the Development Environment in a Container
+
+1. **Clone the repository** Run the following command in your terminal:  
+   `git clone https://github.com/ytakanas22/my-goals-app.git`
+
+2. **Open the project in VS Code** Navigate to the project directory and open it with VS Code:  
+   `cd my-goals-app && code .`
+
+3. **Reopen in Container** When prompted, select **"Reopen in Container"** from the VS Code pop-up (or use the Command Palette).
+
+4. **Verify the container environment** Ensure that your VS Code terminal displays a prompt like `root@...:/workspaces/my-goals-app#`.
+
+5. **Install dependencies** Run the following command inside the container terminal:  
+   `npm install`
+
+6. **Start the development server** Launch the application by running:  
+   `npm start`
+
 # MyGoalApp
 
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.0.4.
