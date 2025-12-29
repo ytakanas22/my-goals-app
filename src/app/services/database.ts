@@ -51,6 +51,15 @@ export class DatabaseService {
     );
   }
 
+  async updateGoalProgress(id: number, progress: number, status: string): Promise<void> {
+    const db = await this.ensureDb();
+    if (!db) return;
+    await db.query(
+      'UPDATE goals SET progress = $1, status = $2 WHERE id = $3;',
+      [progress, status, id]
+    );
+  }
+
   async getGoalsByYear(year: number): Promise<Goal[]> {
     const db = await this.ensureDb();
     if (!db) return [];
