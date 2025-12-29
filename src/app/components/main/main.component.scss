@@ -1,0 +1,42 @@
+.app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.main-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1); // 少し影をつけてモダンに
+}
+
+.logo-area {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  
+  .app-title {
+    font-weight: 500;
+    font-size: 1.2rem;
+  }
+}
+
+.spacer {
+  flex: 1 1 auto; // アイコンを右端に寄せるためのスペーサー
+}
+
+.content-area {
+  flex: 1;
+  padding: 20px;
+  max-width: 900px; // 画面が広すぎないように制限
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+// アクティブなリンクの色を変える（オプション）
+.active {
+  background-color: rgba(255, 255, 255, 0.2);
+}

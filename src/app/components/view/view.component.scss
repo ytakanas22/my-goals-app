@@ -1,0 +1,36 @@
+.view-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+
+  .year-filter {
+    width: 150px;
+  }
+}
+
+.goals-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.goal-card {
+  transition: transform 0.2s;
+  &:hover { transform: translateY(-4px); }
+  
+  .progress-container {
+    margin: 1.5rem 0;
+    .percentage { font-weight: bold; font-size: 1.2rem; }
+  }
+
+  .description {
+    color: #666;
+    min-height: 3em;
+  }
+}
+
+.completed {
+  border-left: 8px solid #4caf50;
+  background-color: #f8fff8;
+}
