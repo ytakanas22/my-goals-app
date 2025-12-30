@@ -44,12 +44,24 @@ export class RegisterComponent implements OnInit {
     });
   }
 
-  async onSubmit() {
-    if (this.goalForm.valid) {
+// register.component.ts
+async onSubmit() {
+  console.log('保存ボタンが押されました', this.goalForm.value); // これが表示されるかチェック
+
+  if (this.goalForm.valid) {
+    try {
       const { title, description, target_year, deadline } = this.goalForm.value;
-      // DatabaseServiceに保存（後でメソッドを拡張します）
+      
+      // Serviceのメソッド名が正しいか確認（addGoal か addGoalExtended か）
       await this.dbService.addGoalExtended(title, description, target_year, deadline);
+      
+      console.log('保存成功！一覧へ移動します');
       this.router.navigate(['/view']);
+    } catch (error) {
+      console.error('保存中にエラーが発生しました:', error);
     }
+  } else {
+    console.warn('フォームがバリデーションエラーです', this.goalForm.errors);
   }
+}
 }

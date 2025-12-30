@@ -37,7 +37,10 @@
             "outputMode": "server",
             "ssr": {
               "entry": "src/server.ts"
-            }
+            },
+            "scripts": [
+              "node_modules/alasql/dist/alasql.min.js"
+            ]
           },
           "configurations": {
             "production": {

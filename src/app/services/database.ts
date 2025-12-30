@@ -1,8 +1,13 @@
 import { isPlatformBrowser } from '@angular/common';
-import { Inject, Injectable, PLATFORM_ID } from '@angular/core';
-import { PGlite } from '@electric-sql/pglite';
+import { Inject, Injectable, PLATFORM_ID, InjectionToken } from '@angular/core';
+import type AlaSQL from 'alasql'; // 型情報だけをインポート（ビルドには影響しない）
 
-// 目標データの型定義
+// AlaSQL用のトークンを定義
+export const ALASQL_TOKEN = new InjectionToken<typeof AlaSQL>('alasql', {
+  providedIn: 'root',
+  factory: () => (window as any).alasql // グローバルな実体とAngularを繋ぐ唯一の接点
+});
+
 export interface Goal {
   id?: number;
   title: string;
@@ -14,96 +19,73 @@ export interface Goal {
   progress?: number;
 }
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class DatabaseService {
-  private db: PGlite | null = null;
+  private isInitialized = false;
 
-  constructor(@Inject(PLATFORM_ID) private platformId: Object) {} // プラットフォーム判定を注入
+  constructor(
+    @Inject(PLATFORM_ID) private platformId: Object,
+    @Inject(ALASQL_TOKEN) private alasql: typeof AlaSQL
+  ) {}
 
-  /**
-   * 目標一覧を取得する
-   */
-  async getGoals(): Promise<Goal[]> {
-    const db = await this.ensureDb();
-    if (!db) return [];
-    const result = await db.query<Goal>('SELECT * FROM goals ORDER BY created_at DESC;');
-    return result.rows;
+  private async ensureDb(): Promise<boolean> {
+    if (!isPlatformBrowser(this.platformId)) return false;
+
+    if (!this.isInitialized) {
+      try {
+        // DI経由で受け取ったalasqlを使用
+        await this.alasql.promise('CREATE INDEXEDDB DATABASE IF NOT EXISTS goal_db');
+        await this.alasql.promise('ATTACH INDEXEDDB DATABASE goal_db');
+        await this.alasql.promise('USE goal_db');
+
+        await this.alasql.promise(`
+          CREATE TABLE IF NOT EXISTS goals (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            title STRING NOT NULL,
+            description STRING,
+            target_year INT NOT NULL,
+            deadline STRING,
+            progress INT DEFAULT 0,
+            status STRING DEFAULT 'active',
+            created_at DATETIME DEFAULT NOW()
+          );
+        `);
+        this.isInitialized = true;
+      } catch (e) {
+        console.error('AlaSQL Initialization failed', e);
+        return false;
+      }
+    }
+    return true;
   }
 
-  /**
-   * 新しい目標を追加する
-   */
-  async addGoal(title: string): Promise<void> {
-    const db = await this.ensureDb();
-    if (!db) return;
-    await db.query('INSERT INTO goals (title) VALUES ($1);', [title]);
-  }
-
-  // addGoalExtended と getGoalsByYear を追加
   async addGoalExtended(title: string, description: string, year: number, deadline: Date): Promise<void> {
-    const db = await this.ensureDb();
-    if (!db) return;
-    await db.query(
-      'INSERT INTO goals (title, description, target_year, deadline) VALUES ($1, $2, $3, $4);',
+    const ok = await this.ensureDb();
+    if (!ok) return;
+    await this.alasql.promise(
+      'INSERT INTO goals (title, description, target_year, deadline, progress, status) VALUES (?, ?, ?, ?, 0, "active")',
       [title, description, year, deadline?.toISOString()]
     );
   }
 
   async updateGoalProgress(id: number, progress: number, status: string): Promise<void> {
-    const db = await this.ensureDb();
-    if (!db) return;
-    await db.query(
+    const ok = await this.ensureDb();
+    if (!ok) return;
+    await this.alasql.promise(
       'UPDATE goals SET progress = $1, status = $2 WHERE id = $3;',
       [progress, status, id]
     );
   }
 
   async getGoalsByYear(year: number): Promise<Goal[]> {
-    const db = await this.ensureDb();
-    if (!db) return [];
-    const result = await db.query<Goal>(
-      'SELECT * FROM goals WHERE target_year = $1 ORDER BY deadline ASC;',
-      [year]
-    );
-    return result.rows;
+    const ok = await this.ensureDb();
+    if (!ok) return [];
+    return await this.alasql.promise('SELECT * FROM goals WHERE target_year = ? ORDER BY deadline ASC', [year]);
   }
 
-  /**
-   * 目標を削除する
-   */
   async deleteGoal(id: number): Promise<void> {
-    const db = await this.ensureDb();
-    if (!db) return;
-    await db.query('DELETE FROM goals WHERE id = $1;', [id]);
-  }
-
-  /**
-   * データベースの初期化
-   * 初回呼び出し時にDBインスタンスを作成し、テーブルがなければ作成します
-   */
-private async ensureDb() {
-    // ブラウザ環境でない（SSR中）なら何もしない
-    if (!isPlatformBrowser(this.platformId)) {
-      return null;
-    }
-
-    if (!this.db) {
-      this.db = new PGlite('idb://my-goals-db');
-      await this.db.exec(`
-        CREATE TABLE IF NOT EXISTS goals (
-          id SERIAL PRIMARY KEY,
-          title TEXT NOT NULL,
-          description TEXT,
-          target_year INTEGER NOT NULL,
-          deadline DATE,
-          progress INTEGER DEFAULT 0,
-          status TEXT DEFAULT 'active',
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );
-      `);
-    }
-    return this.db;
+    const ok = await this.ensureDb();
+    if (!ok) return;
+    await this.alasql.promise('DELETE FROM goals WHERE id = ?', [id]);
   }
 }
