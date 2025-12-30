@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DatabaseService, Goal } from '../../services/database';
 
@@ -30,6 +30,7 @@ export class ViewComponent implements OnInit {
 
   private dbService = inject(DatabaseService);
   private dialog = inject(MatDialog);
+  private cdr = inject(ChangeDetectorRef);
 
   async ngOnInit() {
     await this.loadGoals();
@@ -62,6 +63,7 @@ export class ViewComponent implements OnInit {
         await this.loadGoals();
       }
     });
+    this.cdr.detectChanges();
   }
 
   async onDelete(id: number) {
@@ -69,5 +71,6 @@ export class ViewComponent implements OnInit {
       await this.dbService.deleteGoal(id);
       await this.loadGoals();
     }
+    this.cdr.detectChanges();
   }
 }

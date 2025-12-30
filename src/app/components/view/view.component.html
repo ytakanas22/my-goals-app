@@ -10,27 +10,34 @@
 </div>
 
 <div class="goals-grid">
-  <mat-card *ngFor="let goal of goals" [class.completed]="goal.status === 'completed'">
-    <mat-card-header>
-      <mat-card-title>{{ goal.title }}</mat-card-title>
-      <mat-card-subtitle>期日: {{ goal.deadline | date:'yyyy/MM/dd' }}</mat-card-subtitle>
-    </mat-card-header>
-    
-    <mat-card-content>
-      <div class="progress-section">
-        <span class="percentage">{{ goal.progress }}%</span>
-        <mat-progress-bar mode="determinate" [value]="goal.progress"></mat-progress-bar>
-      </div>
-      <p class="description">{{ goal.description }}</p>
-    </mat-card-content>
+  @for (goal of goals; track goal.id) {
+    <mat-card [class.completed]="goal.status === 'completed'">
+      <mat-card-header>
+        <mat-card-title>{{ goal.title }}</mat-card-title>
+        <mat-card-subtitle>期日: {{ goal.deadline | date:'yyyy/MM/dd' }}</mat-card-subtitle>
+      </mat-card-header>
+      
+      <mat-card-content>
+        <div class="progress-section">
+          <span class="percentage">{{ goal.progress }}%</span>
+          <mat-progress-bar mode="determinate" [value]="goal.progress"></mat-progress-bar>
+        </div>
+        <p class="description">{{ goal.description }}</p>
+      </mat-card-content>
 
-    <mat-card-actions align="end">
-      <button mat-stroked-button (click)="openProgressDialog(goal)">
-        <mat-icon>trending_up</mat-icon> 進捗更新
-      </button>
-      <button mat-icon-button color="warn" (click)="onDelete(goal.id!)">
-        <mat-icon>delete</mat-icon>
-      </button>
-    </mat-card-actions>
-  </mat-card>
+      <mat-card-actions align="end">
+        <button mat-stroked-button (click)="openProgressDialog(goal)">
+          <mat-icon>trending_up</mat-icon> 進捗更新
+        </button>
+        <button mat-icon-button color="warn" (click)="onDelete(goal.id!)">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  } @empty {
+    <div class="no-data">
+      <mat-icon>info</mat-icon>
+      <p>表示できる目標がありません。年度の設定や登録を確認してください。</p>
+    </div>
+  }
 </div>
