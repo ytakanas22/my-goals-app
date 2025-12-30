@@ -10,14 +10,13 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog'; 
 import { ProgressDialogComponent } from '../progress-dialog.component/progress-dialog.component';
-
-
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-view',
   standalone: true,
   imports: [
-    CommonModule, MatCardModule, MatProgressBarModule, 
+    CommonModule, MatCardModule, MatProgressBarModule, FormsModule,
     MatButtonModule, MatIconModule, MatSelectModule, MatFormFieldModule, MatDialogModule
   ],
   templateUrl: './view.component.html',
@@ -37,16 +36,25 @@ export class ViewComponent implements OnInit {
   }
 
   async loadGoals() {
-    // 年度指定で取得するようにServiceを後ほど修正
-    this.goals = await this.dbService.getGoalsByYear(this.selectedYear);
-  }
+      try {
+        // サービス側で ensureDb が解決されるのを待ってから SELECT
+        const data = await this.dbService.getGoalsByYear(this.selectedYear);
+        this.goals = data || [];
+        
+        // 非同期処理後のため、強制的に検知を走らせる
+        this.cdr.markForCheck(); 
+        this.cdr.detectChanges();
+      } catch (error) {
+        console.error('Failed to load goals:', error);
+      }
+    }
 
 /**
    * 進捗更新ダイアログを開く
    */
   openProgressDialog(goal: Goal) {
     const dialogRef = this.dialog.open(ProgressDialogComponent, {
-      width: '400px',
+      width: '600px',
       data: { ...goal } // データのコピーを渡す
     });
 
