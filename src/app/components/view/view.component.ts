@@ -11,6 +11,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog'; 
 import { ProgressDialogComponent } from '../progress-dialog.component/progress-dialog.component';
 import { FormsModule } from '@angular/forms';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-view',
@@ -24,21 +25,24 @@ import { FormsModule } from '@angular/forms';
 })
 export class ViewComponent implements OnInit {
   goals: Goal[] = [];
+  userName: string = '';
   yearList: number[] = [new Date().getFullYear()];
   selectedYear: number = new Date().getFullYear();
 
   private dbService = inject(DatabaseService);
+  private authService = inject(AuthService);
   private dialog = inject(MatDialog);
   private cdr = inject(ChangeDetectorRef);
 
   async ngOnInit() {
+    this.userName = this.authService.currentUserName() || '';
     await this.loadGoals();
   }
 
   async loadGoals() {
       try {
         // サービス側で ensureDb が解決されるのを待ってから SELECT
-        const data = await this.dbService.getGoalsByYear(this.selectedYear);
+        const data = await this.dbService.getGoalsByYear(this.selectedYear, this.userName);
         this.goals = data || [];
 
         this.yearList = this.makeYearList(this.goals);

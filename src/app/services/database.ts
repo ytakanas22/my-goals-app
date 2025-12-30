@@ -16,6 +16,7 @@ export const ALASQL_TOKEN = new InjectionToken<typeof AlaSQL>('alasql', {
 
 export interface Goal {
   id: number; // Date.now() で生成するIDは数値型
+  user_name: string; // 目標を作成したユーザー名
   title: string; // 目標タイトル
   created_at: string; // 作成日時
   status: 'active' | 'completed'; // 目標の状態(default: 'active')
@@ -47,6 +48,7 @@ export class DatabaseService {
         await this.alasql.promise(`
           CREATE TABLE IF NOT EXISTS goals (
             id INT AUTO_INCREMENT PRIMARY KEY,
+            user_name STRING NOT NULL, -- 追加
             title STRING NOT NULL,
             description STRING,
             target_year INT NOT NULL,
@@ -65,7 +67,7 @@ export class DatabaseService {
     return true;
   }
 
-  async addGoalExtended(title: string, description: string, year: number, deadline: Date): Promise<void> {
+  async addGoalExtended(title: string, userName: string, description: string, year: number, deadline: Date): Promise<void> {
     const ok = await this.ensureDb();
     if (!ok) return;
 
@@ -75,9 +77,10 @@ export class DatabaseService {
 
     // 2. IDも含めて INSERT する
     await this.alasql.promise(
-      'INSERT INTO goals (id, title, description, target_year, deadline, progress, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())',
+      'INSERT INTO goals (id, user_name, title, description, target_year, deadline, progress, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())',
       [
         newId,
+        userName,
         title,
         description,
         year,
@@ -86,8 +89,6 @@ export class DatabaseService {
         'active'    // status
       ]
     );
-
-    console.log('手動生成されたIDで保存しました:', newId);
   }
 
   async updateGoalProgress(id: number, progress: number, status: string): Promise<void> {
@@ -99,11 +100,14 @@ export class DatabaseService {
     );
   }
 
-  async getGoalsByYear(year: number): Promise<Goal[]> {
-    const ok = await this.ensureDb();
-    if (!ok) return [];
-    return await this.alasql.promise('SELECT * FROM goals WHERE target_year = ? ORDER BY deadline ASC', [year]);
-  }
+  async getGoalsByYear(year: number, userName: string): Promise<Goal[]> {
+      const ok = await this.ensureDb();
+      if (!ok) return [];
+      return await this.alasql.promise(
+        'SELECT * FROM goals WHERE target_year = ? AND user_name = ? ORDER BY deadline ASC', 
+        [year, userName]
+      );
+    }
 
   async deleteGoal(id: number): Promise<void> {
     const ok = await this.ensureDb();

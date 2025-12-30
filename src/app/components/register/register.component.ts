@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -13,6 +13,7 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { DatabaseService } from '../../services/database';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-register',
@@ -29,9 +30,11 @@ export class RegisterComponent implements OnInit {
   goalForm!: FormGroup;
   years = [2024, 2025, 2026];
 
+  private authService = inject(AuthService);
+  private dbService = inject(DatabaseService);
+
   constructor(
     private fb: FormBuilder,
-    private dbService: DatabaseService,
     private router: Router
   ) {}
 
@@ -44,24 +47,23 @@ export class RegisterComponent implements OnInit {
     });
   }
 
-// register.component.ts
-async onSubmit() {
-  console.log('保存ボタンが押されました', this.goalForm.value); // これが表示されるかチェック
-
-  if (this.goalForm.valid) {
-    try {
-      const { title, description, target_year, deadline } = this.goalForm.value;
-      
-      // Serviceのメソッド名が正しいか確認（addGoal か addGoalExtended か）
-      await this.dbService.addGoalExtended(title, description, target_year, deadline);
-      
-      console.log('保存成功！一覧へ移動します');
-      this.router.navigate(['/view']);
-    } catch (error) {
-      console.error('保存中にエラーが発生しました:', error);
+  // register.component.ts
+  async onSubmit() {
+    if (this.goalForm.valid) {
+      try {
+        const { title, description, target_year, deadline } = this.goalForm.value;
+        const userName = this.authService.currentUserName() || ''; // ユーザー名取得
+        
+        await this.dbService.addGoalExtended(
+          title, 
+          userName,
+          description, 
+          target_year, 
+          deadline, 
+        );
+        
+        this.router.navigate(['/view']);
+      } catch (error) { console.error(error); }
     }
-  } else {
-    console.warn('フォームがバリデーションエラーです', this.goalForm.errors);
   }
-}
 }
