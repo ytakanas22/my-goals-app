@@ -5,7 +5,13 @@ import type AlaSQL from 'alasql'; // 型情報だけをインポート（ビル�
 // AlaSQL用のトークンを定義
 export const ALASQL_TOKEN = new InjectionToken<typeof AlaSQL>('alasql', {
   providedIn: 'root',
-  factory: () => (window as any).alasql // グローバルな実体とAngularを繋ぐ唯一の接点
+  factory: () => {
+    // サーバーサイド（Node.js）実行時は null を返すようにガードする
+    if (typeof window !== 'undefined') {
+      return (window as any).alasql;
+    }
+    return null; 
+  }
 });
 
 export interface Goal {
