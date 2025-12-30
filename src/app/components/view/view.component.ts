@@ -24,8 +24,8 @@ import { FormsModule } from '@angular/forms';
 })
 export class ViewComponent implements OnInit {
   goals: Goal[] = [];
+  yearList: number[] = [new Date().getFullYear()];
   selectedYear: number = new Date().getFullYear();
-  years = [2024, 2025, 2026];
 
   private dbService = inject(DatabaseService);
   private dialog = inject(MatDialog);
@@ -40,6 +40,8 @@ export class ViewComponent implements OnInit {
         // サービス側で ensureDb が解決されるのを待ってから SELECT
         const data = await this.dbService.getGoalsByYear(this.selectedYear);
         this.goals = data || [];
+
+        this.yearList = this.makeYearList(this.goals);
         
         // 非同期処理後のため、強制的に検知を走らせる
         this.cdr.markForCheck(); 
@@ -49,7 +51,7 @@ export class ViewComponent implements OnInit {
       }
     }
 
-/**
+  /**
    * 進捗更新ダイアログを開く
    */
   openProgressDialog(goal: Goal) {
@@ -80,5 +82,15 @@ export class ViewComponent implements OnInit {
       await this.loadGoals();
     }
     this.cdr.detectChanges();
+  }
+
+  private makeYearList(goals: Goal[]): number[] {
+    goals.forEach(goal => {
+      const year = goal.target_year;
+      if (!this.yearList.includes(year)) {
+        this.yearList.push(year);
+      }
+    });
+    return this.yearList.sort((a, b) => b - a); // 降順にソート
   }
 }

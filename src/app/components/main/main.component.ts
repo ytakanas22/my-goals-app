@@ -19,5 +19,5 @@ import { MatTooltipModule } from '@angular/material/tooltip';
   styleUrl: './main.component.scss',
 })
 export class MainComponent {
-
+  thisYear: number = new Date().getFullYear();
 }

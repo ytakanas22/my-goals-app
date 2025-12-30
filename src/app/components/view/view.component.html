@@ -1,10 +1,11 @@
 <div class="view-header">
   <h2>目標一覧</h2>
   <mat-form-field appearance="fill" class="year-filter">
-    <mat-label>表示年度</mat-label>
+    <mat-label>表示年</mat-label>
     <mat-select [(ngModel)]="selectedYear" (selectionChange)="loadGoals()">
-      <mat-option [value]="2025">2025年</mat-option>
-      <mat-option [value]="2024">2024年</mat-option>
+      @for (year of yearList; track year) {
+        <mat-option [value]="year">{{ year }}年</mat-option>
+      }
     </mat-select>
   </mat-form-field>
 </div>

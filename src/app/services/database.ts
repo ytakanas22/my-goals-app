@@ -15,14 +15,14 @@ export const ALASQL_TOKEN = new InjectionToken<typeof AlaSQL>('alasql', {
 });
 
 export interface Goal {
-  id?: number;
-  title: string;
-  created_at?: string;
-  status?: 'active' | 'completed';
-  target_year?: number;
-  description?: string;
-  deadline?: string;
-  progress?: number;
+  id: number; // Date.now() で生成するIDは数値型
+  title: string; // 目標タイトル
+  created_at: string; // 作成日時
+  status: 'active' | 'completed'; // 目標の状態(default: 'active')
+  target_year: number; // 目標年度(例：2026)
+  description?: string; // 目標の詳細説明
+  deadline?: string; // 目標の期限(例：'2026-12-31')
+  progress?: number; // 進捗率(0-100, default: 0)
 }
 
 @Injectable({ providedIn: 'root' })
