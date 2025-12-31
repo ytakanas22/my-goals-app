@@ -63,15 +63,13 @@ export class ViewComponent implements OnInit {
       width: '600px',
       data: { ...goal } // データのコピーを渡す
     });
-
-    // ダイアログが閉じられた後の処理
     dialogRef.afterClosed().subscribe(async (result) => {
       if (result && goal.id) {
-        // DBを更新
-        await this.dbService.updateGoalProgress(
+        await this.dbService.updateGoal(
           goal.id, 
           result.progress, 
-          result.status
+          result.status,
+          result.description
         );
         // 一覧を再読み込みして画面を更新
         await this.loadGoals();

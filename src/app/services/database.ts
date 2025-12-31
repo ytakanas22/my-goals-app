@@ -91,13 +91,19 @@ export class DatabaseService {
     );
   }
 
-  async updateGoalProgress(id: number, progress: number, status: string): Promise<void> {
+  async updateGoal(id: number, progress: number, status: string, description: string): Promise<void> {
     const ok = await this.ensureDb();
     if (!ok) return;
-    await this.alasql.promise(
-      'UPDATE goals SET progress = $1, status = $2 WHERE id = $3;',
-      [progress, status, id]
-    );
+
+    try {
+      await this.alasql.promise(
+        'UPDATE goals SET progress = ?, status = ?, description = ? WHERE id = ?',
+        [progress, status, description, id]
+      );
+      console.log(`更新成功: ID=${id}`);
+    } catch (e) {
+      console.error('更新SQL実行エラー:', e);
+    }
   }
 
   async getGoalsByYear(year: number, userName: string): Promise<Goal[]> {

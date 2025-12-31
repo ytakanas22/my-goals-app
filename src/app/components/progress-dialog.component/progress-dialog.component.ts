@@ -6,17 +6,24 @@ import { MatSliderModule } from '@angular/material/slider';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatButtonModule } from '@angular/material/button';
 import { Goal } from '../../services/database';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIcon, MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
 
 @Component({
   selector: 'app-progress-dialog',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatDialogModule, MatSliderModule, MatCheckboxModule, MatButtonModule],
+  imports: [
+    CommonModule, FormsModule, MatDialogModule, MatSliderModule, MatCheckboxModule,
+    MatButtonModule, MatFormFieldModule, MatIcon, MatInputModule, MatIconModule
+  ],
   templateUrl: './progress-dialog.component.html',
   styleUrls: ['./progress-dialog.component.scss']
 })
 export class ProgressDialogComponent {
   progress: number;
   isCompleted: boolean;
+  description: string;
 
   constructor(
     public dialogRef: MatDialogRef<ProgressDialogComponent>,
@@ -24,16 +31,18 @@ export class ProgressDialogComponent {
   ) {
     this.progress = data.progress || 0;
     this.isCompleted = data.status === 'completed';
+    this.description = data.description || '';
   }
 
   onSliderChange(val: number) {
-    if (val === 100) this.isCompleted = true;
+    this.isCompleted = (val === 100);
   }
 
   onSave() {
     this.dialogRef.close({
       progress: this.progress,
-      status: this.isCompleted ? 'completed' : 'active'
+      status: this.isCompleted ? 'completed' : 'active',
+      description: this.description
     });
   }
 }
