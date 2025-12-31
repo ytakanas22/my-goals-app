@@ -1,0 +1,64 @@
+.login-container {
+  // 画面全体を中央寄せにする
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  
+  // モダンなグラデーション背景
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  padding: 20px;
+
+  mat-card {
+    max-width: 450px;
+    width: 100%;
+    padding: 32px;
+    border-radius: 16px; // 強めの角丸
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05); // 柔らかい影
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px); // 背景を少し透かす
+
+    mat-card-header {
+      margin-bottom: 24px;
+      justify-content: center;
+      text-align: center;
+
+      mat-card-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 8px;
+        letter-spacing: -0.5px;
+      }
+
+      mat-card-subtitle {
+        font-size: 14px;
+        color: #7f8c8d;
+        line-height: 1.6;
+      }
+    }
+
+    mat-card-content {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+
+      mat-form-field {
+        width: 100%;
+      }
+
+      button {
+        height: 48px; // ボタンを少し太く
+        font-size: 16px;
+        font-weight: 600;
+        border-radius: 8px;
+        margin-top: 8px;
+        transition: transform 0.2s ease;
+
+        &:hover {
+          transform: translateY(-2px); // ホバー時に少し浮く
+        }
+      }
+    }
+  }
+}

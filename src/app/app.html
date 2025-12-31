@@ -5,16 +5,24 @@
   <div class="login-container">
     <mat-card>
       <mat-card-header>
-        <mat-card-title>ようこそ！</mat-card-title>
-        <mat-card-subtitle>目標管理を始めるために名前を入力してください</mat-card-subtitle>
+        <div style="margin-bottom: 16px;">
+          <mat-icon style="transform: scale(2); color: #3f51b5; height: 40px; width: 40px;">rocket_launch</mat-icon>
+        </div>
+        <mat-card-title>My Goals App</mat-card-title>
+        <mat-card-subtitle>
+          目標管理を始めるために、<br>あなたのユーザー名を入力してください。
+        </mat-card-subtitle>
       </mat-card-header>
+
       <mat-card-content>
         <mat-form-field appearance="outline">
           <mat-label>ユーザー名</mat-label>
-          <input matInput #nameInput (keyup.enter)="login(nameInput.value)">
+          <input matInput #nameInput (keyup.enter)="login(nameInput.value)" placeholder="例: Taro">
+          <mat-icon matSuffix>person</mat-icon>
         </mat-form-field>
+
         <button mat-raised-button color="primary" (click)="login(nameInput.value)">
-          開始する
+          目標設定を開始する
         </button>
       </mat-card-content>
     </mat-card>
