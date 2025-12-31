@@ -34,8 +34,20 @@ export class ProgressDialogComponent {
     this.description = data.description || '';
   }
 
+  get isCheckboxDisabled(): boolean {
+    return this.progress === 100;
+  }
+
+
   onSliderChange(val: number) {
     this.isCompleted = (val === 100);
+  }
+
+  onCheckboxChange(checked: boolean) {
+    this.isCompleted = checked;
+    if (checked) {
+      this.progress = 100;
+    }
   }
 
   onSave() {
