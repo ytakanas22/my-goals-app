@@ -1,5 +1,7 @@
 import { isPlatformBrowser } from '@angular/common';
 import { Inject, Injectable, PLATFORM_ID, InjectionToken } from '@angular/core';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { environment } from '../../environment/environment';
 import type AlaSQL from 'alasql'; // 型情報だけをインポート（ビルドには影響しない）
 
 // AlaSQL用のトークンを定義
@@ -29,11 +31,15 @@ export interface Goal {
 @Injectable({ providedIn: 'root' })
 export class DatabaseService {
   private isInitialized = false;
+  private supabase: SupabaseClient;
+  
 
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
     @Inject(ALASQL_TOKEN) private alasql: typeof AlaSQL
-  ) {}
+  ) {
+    this.supabase = createClient(environment.supabaseUrl, environment.supabaseKey);
+  }
 
   private async ensureDb(): Promise<boolean> {
     if (!isPlatformBrowser(this.platformId)) return false;
@@ -48,7 +54,7 @@ export class DatabaseService {
         await this.alasql.promise(`
           CREATE TABLE IF NOT EXISTS goals (
             id INT AUTO_INCREMENT PRIMARY KEY,
-            user_name STRING NOT NULL, -- 追加
+            user_name STRING NOT NULL,
             title STRING NOT NULL,
             description STRING,
             target_year INT NOT NULL,
@@ -89,6 +95,19 @@ export class DatabaseService {
         'active'    // status
       ]
     );
+  
+    // 3. クラウド同期を呼び出す
+    await this.syncToCloud({
+      id: newId,
+      user_name: userName,
+      title,
+      description,
+      target_year: year,
+      deadline: deadline?.toISOString(),
+      progress: 0,
+      status: 'active',
+      created_at: new Date().toISOString()
+    });
   }
 
   async updateGoal(id: number, progress: number, status: string, description: string): Promise<void> {
@@ -129,5 +148,44 @@ export class DatabaseService {
     } catch (e) {
       console.error('削除SQL実行エラー:', e);
     }
+  }
+
+  /**
+   * クラウド同期 (Sync Down): ログイン時にサーバーから最新データを取得して IndexedDB を更新
+   */
+  async syncFromCloud(userName: string): Promise<void> {
+    const ok = await this.ensureDb();
+    if (!ok) return;
+
+    // Supabaseからデータを取得
+    const { data, error } = await this.supabase
+      .from('goals')
+      .select('*')
+      .eq('user_name', userName);
+
+    if (error) {
+      console.error('Supabaseからの取得失敗:', error);
+      return;
+    }
+
+    if (data && data.length > 0) {
+      // ローカルの既存データを一度消して、クラウドのデータで上書き（簡易的な同期）
+      await this.alasql.promise('DELETE FROM goals WHERE user_name = ?', [userName]);
+      for (const goal of data) {
+        await this.alasql.promise('INSERT INTO goals VALUES ?', [goal]);
+      }
+      console.log('クラウドと同期完了');
+    }
+  }
+
+  /**
+   * クラウド保存 (Sync Up): 追加・更新・削除の後に呼ぶ
+   */
+  private async syncToCloud(goal: Goal): Promise<void> {
+    const { error } = await this.supabase
+      .from('goals')
+      .upsert(goal); // upsertは「無ければ挿入、有れば更新」を行う便利な命令
+
+    if (error) console.error('クラウド保存失敗:', error);
   }
 }

@@ -36,6 +36,7 @@ export class ViewComponent implements OnInit {
 
   async ngOnInit() {
     this.userName = this.authService.currentUserName() || '';
+    await this.dbService.syncFromCloud(this.userName);
     await this.loadGoals();
   }
 
