@@ -110,18 +110,27 @@ export class DatabaseService {
     });
   }
 
-  async updateGoal(id: number, progress: number, status: string, description: string): Promise<void> {
+async updateGoal(id: number, progress: number, status: string, description: string): Promise<void> {
     const ok = await this.ensureDb();
     if (!ok) return;
 
     try {
+      // 1. ローカル(AlaSQL)を更新
       await this.alasql.promise(
         'UPDATE goals SET progress = ?, status = ?, description = ? WHERE id = ?',
         [progress, status, description, id]
       );
-      console.log(`更新成功: ID=${id}`);
+
+      // 2. 更新後のデータを取得してクラウドに同期
+      const results = await this.alasql.promise('SELECT * FROM goals WHERE id = ?', [id]) as Goal[];
+      
+      if (results && results.length > 0) {
+        const updatedGoal = results[0];
+        await this.syncToCloud(updatedGoal);
+        console.log(`更新・クラウド同期成功: ID=${id}`);
+      }
     } catch (e) {
-      console.error('更新SQL実行エラー:', e);
+      console.error('更新エラー:', e);
     }
   }
 
@@ -134,19 +143,25 @@ export class DatabaseService {
       );
     }
 
-  async deleteGoal(id: number): Promise<void> {
+async deleteGoal(id: number): Promise<void> {
     const ok = await this.ensureDb();
     if (!ok) return;
 
-    // 確実に数値に変換し、実行結果をログに出す
-    const numericId = Number(id);
-    console.log('削除を実行するID:', numericId);
-
     try {
-      const result = await this.alasql.promise('DELETE FROM goals WHERE id = ?', [numericId]);
-      console.log('削除結果（件数など）:', result);
+      // 1. ローカル(AlaSQL)から削除
+      await this.alasql.promise('DELETE FROM goals WHERE id = ?', [id]);
+
+      // 2. クラウド(Supabase)から削除
+      const { error } = await this.supabase
+        .from('goals')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      
+      console.log(`削除成功: ID=${id} (ローカル＆クラウド)`);
     } catch (e) {
-      console.error('削除SQL実行エラー:', e);
+      console.error('削除エラー:', e);
     }
   }
 
