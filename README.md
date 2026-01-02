@@ -19,6 +19,14 @@ Make your goals for this year!!
 6. **Start the development server** Launch the application by running:  
    `npm start`
 
+# Deployment
+
+This apprication deploy via [https://vercel.com/](https://vercel.com/)
+
+# Database
+
+Used [Supabase](https://supabase.com/) for cloud data synchronization and persistence across different devices.
+
 # MyGoalApp
 
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.0.4.

@@ -20,4 +20,5 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 })
 export class MainComponent {
   thisYear: number = new Date().getFullYear();
+  loginUser: string = localStorage.getItem('goal_app_user') || 'Guest';
 }

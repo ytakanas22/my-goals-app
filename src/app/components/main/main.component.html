@@ -5,20 +5,23 @@
       <span class="app-title">Goals {{ thisYear }}</span>
     </div>
 
-    <span class="spacer"></span>
+  <span class="spacer"></span> <nav>
+      <div class="user-display">
+        <mat-icon>account_circle</mat-icon>
+        <span>{{ loginUser }}</span>
+      </div>
 
-    <nav>
       <a mat-icon-button 
-         routerLink="/view" 
-         routerLinkActive="active" 
-         matTooltip="目標一覧">
+        routerLink="/view" 
+        routerLinkActive="active" 
+        matTooltip="目標一覧">
         <mat-icon>list_alt</mat-icon>
       </a>
       
       <a mat-icon-button 
-         routerLink="/register" 
-         routerLinkActive="active" 
-         matTooltip="目標を設定する">
+        routerLink="/register" 
+        routerLinkActive="active" 
+        matTooltip="目標を設定する">
         <mat-icon>add_task</mat-icon>
       </a>
     </nav>

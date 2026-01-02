@@ -36,7 +36,34 @@
   box-sizing: border-box;
 }
 
-// アクティブなリンクの色を変える（オプション）
+mat-toolbar {
+  display: flex;
+  justify-content: space-between; // タイトルとナビを両端に分ける場合に便利
+
+  nav {
+    display: flex;
+    align-items: center;
+    gap: 16px; // ★ 各ボタンの間隔を16px開ける（お好みで調整してください）
+
+    // ユーザー名表示部分のスタイル
+    .user-display {
+      display: flex;
+      align-items: center;
+      gap: 4px; // アイコンと名前の間の距離
+      margin-right: 8px; // ユーザー名と操作ボタンの間を少し多めに開ける
+      font-weight: 500;
+      font-size: 14px;
+      color: #555;
+      
+      mat-icon {
+        margin-right: 4px;
+      }
+    }
+  }
+}
+
+// アクティブなリンクを目立たせる（おまけ）
 .active {
-  background-color: rgba(255, 255, 255, 0.2);
+  background: rgba(63, 81, 181, 0.1);
+  border-radius: 50%;
 }
