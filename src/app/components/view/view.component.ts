@@ -12,13 +12,15 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ProgressDialogComponent } from '../progress-dialog.component/progress-dialog.component';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
+import { MatChipsModule } from '@angular/material/chips';
 
 @Component({
   selector: 'app-view',
   standalone: true,
   imports: [
     CommonModule, MatCardModule, MatProgressBarModule, FormsModule,
-    MatButtonModule, MatIconModule, MatSelectModule, MatFormFieldModule, MatDialogModule
+    MatButtonModule, MatIconModule, MatSelectModule, MatFormFieldModule, MatDialogModule,
+    MatChipsModule
   ],
   templateUrl: './view.component.html',
   styleUrls: ['./view.component.scss']
@@ -70,7 +72,9 @@ export class ViewComponent implements OnInit {
           goal.id, 
           result.progress, 
           result.status,
-          result.description
+          result.description,
+          result.deadline,
+          result.tags
         );
         // 一覧を再読み込みして画面を更新
         await this.loadGoals();

@@ -9,13 +9,21 @@ import { Goal } from '../../services/database';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIcon, MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { MatChipInputEvent, MatChipsModule } from '@angular/material/chips';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { provideNativeDateAdapter } from '@angular/material/core'
+import { COMMA, ENTER } from '@angular/cdk/keycodes';
 
 @Component({
   selector: 'app-progress-dialog',
   standalone: true,
   imports: [
     CommonModule, FormsModule, MatDialogModule, MatSliderModule, MatCheckboxModule,
-    MatButtonModule, MatFormFieldModule, MatIcon, MatInputModule, MatIconModule
+    MatButtonModule, MatFormFieldModule, MatIcon, MatInputModule, MatIconModule,
+    MatChipsModule, MatDatepickerModule
+  ],
+  providers: [
+    provideNativeDateAdapter()
   ],
   templateUrl: './progress-dialog.component.html',
   styleUrls: ['./progress-dialog.component.scss']
@@ -24,6 +32,10 @@ export class ProgressDialogComponent {
   progress: number;
   isCompleted: boolean;
   description: string;
+  deadline: Date | null;
+  tags: string[];
+
+  readonly separatorKeysCodes = [ENTER, COMMA] as const;
 
   constructor(
     public dialogRef: MatDialogRef<ProgressDialogComponent>,
@@ -32,12 +44,24 @@ export class ProgressDialogComponent {
     this.progress = data.progress || 0;
     this.isCompleted = data.status === 'completed';
     this.description = data.description || '';
+    this.deadline = data.deadline ? new Date(data.deadline) : null;
+    this.tags = data.tags ? [...data.tags] : []; // 元データを壊さないようコピー
   }
 
   get isCheckboxDisabled(): boolean {
     return this.progress === 100;
   }
 
+  addTag(event: MatChipInputEvent): void {
+    const value = (event.value || '').trim();
+    if (value) this.tags.push(value);
+    event.chipInput!.clear();
+  }
+
+  removeTag(tag: string): void {
+    const index = this.tags.indexOf(tag);
+    if (index >= 0) this.tags.splice(index, 1);
+  }
 
   onSliderChange(val: number) {
     this.isCompleted = (val === 100);
@@ -54,7 +78,9 @@ export class ProgressDialogComponent {
     this.dialogRef.close({
       progress: this.progress,
       status: this.isCompleted ? 'completed' : 'active',
-      description: this.description
+      description: this.description,
+      deadline: this.deadline?.toISOString(),
+      tags: this.tags
     });
   }
 }

@@ -88,3 +88,26 @@ mat-dialog-actions {
     box-shadow: 0 4px 10px rgba(63, 81, 181, 0.2);
   }
 }
+
+.edit-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;      // フィールド同士の隙間
+  margin-top: 16px;
+}
+
+.full-width {
+  width: 100%;   // 確実に横幅いっぱいにする
+}
+
+// モバイル対応：ダイアログ自体のパディング調整
+mat-dialog-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 300px; // 最小幅を確保
+}
+
+.memo-field {
+  width: 100%;
+}

@@ -26,6 +26,7 @@ export interface Goal {
   description?: string; // 目標の詳細説明
   deadline?: string; // 目標の期限(例：'2026-12-31')
   progress?: number; // 進捗率(0-100, default: 0)
+  tags?: string[];
 }
 
 @Injectable({ providedIn: 'root' })
@@ -73,31 +74,12 @@ export class DatabaseService {
     return true;
   }
 
-  async addGoalExtended(title: string, userName: string, description: string, year: number, deadline: Date): Promise<void> {
-    const ok = await this.ensureDb();
+  async addGoalExtended(title: string, userName: string, description: string, year: number, deadline: Date, tags: string[]): Promise<void> {
+  const ok = await this.ensureDb();
     if (!ok) return;
 
-    // 1. 手動でユニークなID（数値）を生成
-    // Date.now() は現在の時刻をミリ秒で返すため、重複しにくく数値として扱えます
     const newId = Date.now();
-
-    // 2. IDも含めて INSERT する
-    await this.alasql.promise(
-      'INSERT INTO goals (id, user_name, title, description, target_year, deadline, progress, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())',
-      [
-        newId,
-        userName,
-        title,
-        description,
-        year,
-        deadline?.toISOString(),
-        0,          // progress
-        'active'    // status
-      ]
-    );
-  
-    // 3. クラウド同期を呼び出す
-    await this.syncToCloud({
+    const goal: Goal = {
       id: newId,
       user_name: userName,
       title,
@@ -106,28 +88,35 @@ export class DatabaseService {
       deadline: deadline?.toISOString(),
       progress: 0,
       status: 'active',
+      tags: tags,
       created_at: new Date().toISOString()
-    });
+    };
+
+    // 1. AlaSQL (Local) - JSON型として保存
+    await this.alasql.promise(
+      'INSERT INTO goals (id, user_name, title, description, target_year, deadline, progress, status, tags, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [goal.id, goal.user_name, goal.title, goal.description, goal.target_year, goal.deadline, goal.progress, goal.status, JSON.stringify(goal.tags), goal.created_at]
+    );
+
+    // 2. Supabase (Cloud) - JSONBカラムに自動的に配列として入る
+    await this.syncToCloud(goal);
   }
 
-async updateGoal(id: number, progress: number, status: string, description: string): Promise<void> {
+  async updateGoal(id: number, progress: number, status: string, description: string, deadline: string | undefined, tags: string[]): Promise<void> {
     const ok = await this.ensureDb();
     if (!ok) return;
 
     try {
       // 1. ローカル(AlaSQL)を更新
       await this.alasql.promise(
-        'UPDATE goals SET progress = ?, status = ?, description = ? WHERE id = ?',
-        [progress, status, description, id]
+        'UPDATE goals SET progress = ?, status = ?, description = ?, deadline = ?, tags = ? WHERE id = ?',
+        [progress, status, description, deadline, JSON.stringify(tags), id]
       );
 
-      // 2. 更新後のデータを取得してクラウドに同期
+      // 2. クラウド同期 (最新の状態を取得して送る)
       const results = await this.alasql.promise('SELECT * FROM goals WHERE id = ?', [id]) as Goal[];
-      
       if (results && results.length > 0) {
-        const updatedGoal = results[0];
-        await this.syncToCloud(updatedGoal);
-        console.log(`更新・クラウド同期成功: ID=${id}`);
+        await this.syncToCloud(results[0]);
       }
     } catch (e) {
       console.error('更新エラー:', e);
@@ -137,10 +126,16 @@ async updateGoal(id: number, progress: number, status: string, description: stri
   async getGoalsByYear(year: number, userName: string): Promise<Goal[]> {
       const ok = await this.ensureDb();
       if (!ok) return [];
-      return await this.alasql.promise(
-        'SELECT * FROM goals WHERE target_year = ? AND user_name = ? ORDER BY deadline ASC', 
-        [year, userName]
-      );
+      const results = await this.alasql.promise(
+          'SELECT * FROM goals WHERE target_year = ? AND user_name = ? ORDER BY deadline ASC', 
+          [year, userName]
+        ) as Goal[];
+
+      // tags が文字列で返ってきたら配列に変換してあげる
+      return results.map((goal: Goal) => ({
+        ...goal,
+        tags: typeof goal.tags === 'string' ? JSON.parse(goal.tags) : (goal.tags || [])
+      }));
     }
 
 async deleteGoal(id: number): Promise<void> {

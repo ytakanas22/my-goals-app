@@ -26,6 +26,25 @@
         <textarea matInput formControlName="description" rows="6" placeholder="具体的なアクションプランなど"></textarea>
       </mat-form-field>
 
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>タグ (Enterで追加) </mat-label>
+        <mat-chip-grid #chipGrid aria-label="タグの入力">
+          @for (tag of tags; track tag) {
+            <mat-chip-row (removed)="removeTag(tag)">
+              {{tag}}
+              <button matChipRemove aria-label="'remove ' + tag">
+                <mat-icon>cancel</mat-icon>
+              </button>
+            </mat-chip-row>
+          }
+        </mat-chip-grid>
+        <input placeholder="例: 仕事, 学習, 趣味..."
+              [matChipInputFor]="chipGrid"
+              [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+              [matChipInputAddOnBlur]="addOnBlur"
+              (matChipInputTokenEnd)="addTag($event)"/>
+      </mat-form-field>
+
       <mat-form-field appearance="outline">
         <mat-label>期日</mat-label>
         <input matInput [matDatepicker]="picker" formControlName="deadline">

@@ -10,19 +10,34 @@
   </mat-form-field>
 </div>
 
-<div class="goals-grid">
+<div class="goals-container">
   @for (goal of goals; track goal.id) {
-    <mat-card [class.completed]="goal.status === 'completed'">
+    <mat-card [class.completed]="goal.status === 'completed'" class="goal-card">
       <mat-card-header>
+        <div mat-card-avatar class="status-icon">
+          <mat-icon>{{ goal.status === 'completed' ? 'check_circle' : 'pending' }}</mat-icon>
+        </div>
         <mat-card-title>{{ goal.title }}</mat-card-title>
         <mat-card-subtitle>期日: {{ goal.deadline | date:'yyyy/MM/dd' }}</mat-card-subtitle>
       </mat-card-header>
       
       <mat-card-content>
+        @if (goal.tags && goal.tags.length > 0) {
+          <mat-chip-set class="tag-list">
+            @for (tag of goal.tags; track tag) {
+              <mat-chip class="small-tag">{{ tag }}</mat-chip>
+            }
+          </mat-chip-set>
+        }
+
         <div class="progress-section">
-          <span class="percentage">{{ goal.progress }}%</span>
+          <div class="progress-label">
+            <span>進捗率</span>
+            <span class="percentage">{{ goal.progress }}%</span>
+          </div>
           <mat-progress-bar mode="determinate" [value]="goal.progress"></mat-progress-bar>
         </div>
+
         <p class="description">{{ goal.description }}</p>
       </mat-card-content>
 
@@ -30,7 +45,7 @@
         <button mat-stroked-button (click)="openProgressDialog(goal)">
           <mat-icon>trending_up</mat-icon> 進捗更新
         </button>
-        <button mat-icon-button color="warn" (click)="onDelete(goal.id!)">
+        <button mat-icon-button color="warn" (click)="onDelete(goal.id)">
           <mat-icon>delete</mat-icon>
         </button>
       </mat-card-actions>
@@ -38,7 +53,7 @@
   } @empty {
     <div class="no-data">
       <mat-icon>info</mat-icon>
-      <p>表示できる目標がありません。年度の設定や登録を確認してください。</p>
+      <p>表示できる目標がありません。</p>
     </div>
   }
 </div>
