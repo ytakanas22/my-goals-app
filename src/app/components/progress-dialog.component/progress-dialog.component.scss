@@ -108,6 +108,34 @@ mat-dialog-content {
   min-width: 300px; // 最小幅を確保
 }
 
+.progress-container {
+  width: 100%;           // コンテナ自体を横幅いっぱいに
+  margin: 16px 0 24px 0; // 上下の余白を確保して息苦しさを解消
+}
+
+.label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;    // スライダーとの間の隙間
+  
+  span {
+    font-weight: 500;
+    color: #555;
+  }
+
+  .percentage {
+    color: #3f51b5;      // パーセンテージを少し目立たせる
+    font-weight: bold;
+    font-size: 1.1rem;
+  }
+}
+
+mat-slider {
+  width: 100%;           // これでスライダーが左端から右端まで広がります
+  margin-left: -8px;     // スライダーのツマミ（Thumb）の余白分を微調整（任意）
+}
+
 .memo-field {
   width: 100%;
 }
