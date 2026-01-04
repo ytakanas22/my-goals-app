@@ -35,7 +35,7 @@ export class DatabaseService {
   
 
   constructor(
-    @Inject(PLATFORM_ID) private platformId: Object,
+    @Inject(PLATFORM_ID) private platformId: object,
     @Inject(ALASQL_TOKEN) private alasql: typeof AlaSQL
   ) {
     this.supabase = createClient(environment.supabaseUrl, environment.supabaseKey);
