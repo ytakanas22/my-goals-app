@@ -12,18 +12,16 @@ import { MatIcon } from '@angular/material/icon';
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })
-export class App implements OnInit {
-  userName: string | null = null;
+export class App {
   private authService = inject(AuthService);
 
-  ngOnInit() {
-    this.userName = this.authService.currentUserName();
+  get userName() {
+    return this.authService.currentUser();
   }
 
   login(name: string) {
     if (name.trim()) {
       this.authService.setUserName(name);
-      this.userName = name; // これで @if が切り替わり、画面が表示される
     }
   }
 }
