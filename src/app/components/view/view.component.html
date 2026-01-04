@@ -1,13 +1,26 @@
 <div class="view-header">
   <h2>目標一覧</h2>
-  <mat-form-field appearance="fill" class="year-filter">
-    <mat-label>表示年</mat-label>
-    <mat-select [(ngModel)]="selectedYear" (selectionChange)="loadGoals()">
-      @for (year of yearList; track year) {
-        <mat-option [value]="year">{{ year }}年</mat-option>
-      }
-    </mat-select>
-  </mat-form-field>
+  
+  <div class="filter-group">
+    <mat-form-field appearance="outline" class="filter-field">
+      <mat-label>タグで絞り込み</mat-label>
+      <mat-select [(ngModel)]="selectedTag" (selectionChange)="applyFilter()">
+        <mat-option value="すべて">すべて</mat-option>
+        @for (tag of tagList; track tag) {
+          <mat-option [value]="tag">{{ tag }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="filter-field">
+      <mat-label>表示年</mat-label>
+      <mat-select [(ngModel)]="selectedYear" (selectionChange)="loadGoals()">
+        @for (year of yearList; track year) {
+          <mat-option [value]="year">{{ year }}年</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+  </div>
 </div>
 
 <div class="goals-container">

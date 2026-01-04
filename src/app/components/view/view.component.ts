@@ -26,10 +26,15 @@ import { MatChipsModule } from '@angular/material/chips';
   styleUrls: ['./view.component.scss']
 })
 export class ViewComponent implements OnInit {
+  allGoals: Goal[] = []; // バックアップ用の全データ
   goals: Goal[] = [];
   userName: string = '';
   yearList: number[] = [new Date().getFullYear()];
   selectedYear: number = new Date().getFullYear();
+
+  // タグフィルタ用
+  tagList: string[] = [];
+  selectedTag: string = 'すべて';
 
   private dbService = inject(DatabaseService);
   private authService = inject(AuthService);
@@ -46,9 +51,11 @@ export class ViewComponent implements OnInit {
       try {
         // サービス側で ensureDb が解決されるのを待ってから SELECT
         const data = await this.dbService.getGoalsByYear(this.selectedYear, this.userName);
-        this.goals = data || [];
+        this.allGoals = data || [];
 
-        this.yearList = this.makeYearList(this.goals);
+        this.extractTags();
+        this.applyFilter();
+        this.yearList = this.makeYearList(this.allGoals);
         
         // 非同期処理後のため、強制的に検知を走らせる
         this.cdr.markForCheck(); 
@@ -83,6 +90,17 @@ export class ViewComponent implements OnInit {
     this.cdr.detectChanges();
   }
 
+  applyFilter() {
+    if (this.selectedTag === 'すべて') {
+      this.goals = [...this.allGoals];
+    } else {
+      this.goals = this.allGoals.filter(goal => 
+        goal.tags && goal.tags.includes(this.selectedTag)
+      );
+    }
+    this.cdr.detectChanges();
+  }
+
   async onDelete(id: number) {
     if (confirm('この目標を削除しますか？')) {
       await this.dbService.deleteGoal(id);
@@ -99,5 +117,15 @@ export class ViewComponent implements OnInit {
       }
     });
     return this.yearList.sort((a, b) => b - a); // 降順にソート
+  }
+
+  private extractTags() {
+    const tags = new Set<string>();
+    this.allGoals.forEach(goal => {
+      if (goal.tags) {
+        goal.tags.forEach(t => tags.add(t));
+      }
+    });
+    this.tagList = Array.from(tags).sort();
   }
 }

@@ -62,3 +62,29 @@
     color: #4caf50;
   }
 }
+
+.view-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap; // 画面が狭い時に折り返すように
+  gap: 16px;
+  margin-bottom: 24px;
+
+  h2 {
+    margin: 0;
+  }
+}
+
+.filter-group {
+  display: flex;
+  gap: 12px;
+}
+
+.filter-field {
+  width: 160px; // 適切な幅に調整
+  // Material 3 などの場合、余白を詰める
+  ::ng-deep .mat-mdc-text-field-wrapper {
+    background-color: white;
+  }
+}
